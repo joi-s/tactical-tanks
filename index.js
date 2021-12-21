@@ -15,13 +15,13 @@ can.height = 1000
 
 //tank class to store data
 class tank{
-    constructor(player){//init function
+    constructor(player, x, y){//init function
         this.hp = 3;
         this.points = 0;
         this.range = 1;
         this.user = player; 
-        this.x = 2
-        this.y = 4
+        this.x = x
+        this.y = y
         this.color = "#042069"
     }
 
@@ -201,6 +201,5 @@ var action = "R"
 var drag = false;
 
 //creates a list to store tanks *todo create way to load from sql
-var tanks = [new tank("joi"), new tank("tylar")];
-tanks[1].x = 4
+var tanks = [new tank("joi", 1, 2), new tank("tylar", 3,4)];
 draw();
