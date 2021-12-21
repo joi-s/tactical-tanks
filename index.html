@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tactical tanks</title>
-    
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1 style="top: auto; text-align: center;">Tactical tanks</h1>
@@ -14,9 +14,15 @@
         <option value="F">Fire</option>
         <option value="R">Range</option>
         <option value="G">Give</option>
-      </select>
+    </select>
+    <div class="tooltip" id="tool">
+        <h2 id="header"class="center">test</h2>
+        <a>hp: </a><a id="tool1">a1</a><br>
+        <a>points: </a><a id="tool2">a2</a>
+    </div>
     <canvas id="can" style="background-color: burlywood; width: 2000px; height: 1000px;"></canvas>
     <script src="index.js"></script>    
+    
     
 </body>
 </html>
