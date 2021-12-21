@@ -3,7 +3,7 @@ var can = document.getElementById('can');
 var ctx = can.getContext('2d');
 var e = document.getElementById("movsel");
 can.width = 2000
-can.height = 2000
+can.height = 1000
 
 //tank class to store data
 class tank{
@@ -16,6 +16,7 @@ class tank{
         this.y = 4
         this.color = "#042069"
     }
+
     //getters bc javascript is shit
     get player(){
         return this._user
@@ -54,6 +55,13 @@ class tank{
         this.yd = this.y-1
         ctx.rect(this.xd*50+10 , this.yd*50+10 , 30, 30);
         ctx.fill();
+    }
+    cheacksqr(ix,iy){//checks if tank is at a specific square on the grid
+        if (ix == this.x-1 && iy == this.y-1){
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }
@@ -103,23 +111,37 @@ function draw() {
     }   
 }
 
+//gets mouse cords and returns them in a list [x,y]
+function getmousecord(ev){
+    //gets exactpoition
+    posses = getCursorPosition(ev)
+    //convert to code grid position
+    var gridx = pxtocord(posses["x"])
+    var gridy = pxtocord(posses["y"])
+    //returns in list
+    return [gridx,gridy]
+}
 //event listeners for draging perposes
 can.addEventListener('mousedown', function(ev) {
     drag = true;
     //get mouse position
-    var posx = ev.clientX;
-    console.log("x: ", posx)
-    var posy = ev.clientY;
-    console.log("y: ", posy)
+    posses = getCursorPosition(ev)
     //convert to code grid position
-    var gridx = pxtocord(posx)
-    var gridy = pxtocord(posy)
-    console.log(gridx)
-    console.log(gridy)
+    var gridx = pxtocord(posses["x"])
+    var gridy = pxtocord(posses["y"])
+    console.log(gridx + "," + gridy)
 });
 
 can.addEventListener('mousemove', function(event) {
+    mouseloc = getmousecord(event);
     if (drag){
+        
+    }
+    for (let t = 0; t < tanks.length; t++) {
+        const tank = tanks[t];
+        if (tank.cheacksqr(mouseloc[0],mouseloc[1])){
+            //todo make tooltip code here
+        }
         
     }
 });
@@ -127,6 +149,15 @@ can.addEventListener('mousemove', function(event) {
 can.addEventListener('mouseup', function(event) {
     drag = false;
 });
+
+function getCursorPosition(event){
+    const x = event.offsetX
+    const y = event.offsetY
+    return {"x": x,"y": y}
+}
+
+
+
 function getop() {
     var value = e.options[e.selectedIndex].value;
     action = value
