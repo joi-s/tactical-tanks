@@ -3,7 +3,7 @@ var can = document.getElementById('can');
 var ctx = can.getContext('2d');
 var e = document.getElementById("movsel");
 can.width = 2000
-can.height = 900
+can.height = 2000
 
 //tank class to store data
 class tank{
@@ -80,12 +80,12 @@ function grid(){//draws the grid to the canvas
         ctx.stroke();
     }
 }
-//rounds down ex: 4.79 to 4
-function rounddown(i) {
-    var o = String(i);
+//
+function pxtocord(i) {
+    var o = String(i/50);
     var ou = o.split(".");
     out = ou[0];
-    return out;
+    return parseInt(out);
 }
 //wipes canvas
 function clear() {
@@ -104,12 +104,18 @@ function draw() {
 }
 
 //event listeners for draging perposes
-can.addEventListener('mousedown', function(event) {
+can.addEventListener('mousedown', function(ev) {
     drag = true;
     //get mouse position
-    var posx = e.clientX;
-    var posy = e.clientY;
-
+    var posx = ev.clientX;
+    console.log("x: ", posx)
+    var posy = ev.clientY;
+    console.log("y: ", posy)
+    //convert to code grid position
+    var gridx = pxtocord(posx)
+    var gridy = pxtocord(posy)
+    console.log(gridx)
+    console.log(gridy)
 });
 
 can.addEventListener('mousemove', function(event) {
@@ -126,7 +132,7 @@ function getop() {
     action = value
 }
 //drag related vars
-var action = actions.move
+var action = "R"
 var drag = false;
 
 //creates a list to store tanks *todo create way to load from sql
