@@ -2,6 +2,14 @@
 var can = document.getElementById('can');
 var ctx = can.getContext('2d');
 var e = document.getElementById("movsel");
+
+//tooltip variables
+var tooltip = document.getElementById("tool");
+var usertip = document.getElementById("header")
+var hptip = document.getElementById("tool1")
+var pointtip = document.getElementById("tool2")
+
+//manualy setting canvas size
 can.width = 2000
 can.height = 1000
 
@@ -51,17 +59,27 @@ class tank{
     drawt(){//draws tank to the screen
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        this.xd = this.x-1
-        this.yd = this.y-1
+        this.xd = this.x-1;
+        this.yd = this.y-1;
         ctx.rect(this.xd*50+10 , this.yd*50+10 , 30, 30);
         ctx.fill();
     }
-    cheacksqr(ix,iy){//checks if tank is at a specific square on the grid
-        if (ix == this.x-1 && iy == this.y-1){
-            return true;
-        } else {
-            return false;
+
+    mcheck(event){//checks if tank is at a specific square on the grid
+        const x = event.offsetX;
+        const y = event.offsetY;
+        this.xd = this.x-1;
+        this.yd = this.y-1;
+        if (x >= this.xd * 50 + 10 && x <= this.xd * 50 + 40){
+            if (y >= this.yd * 50 + 10 && y <= this.yd * 50 + 40){
+                return true;
+            }
         }
+        return false
+    }
+
+    toolinfo(){
+        return {'hp':this._hp, 'player': this.user, 'points':this._points}
     }
 
 }
@@ -133,16 +151,34 @@ can.addEventListener('mousedown', function(ev) {
 });
 
 can.addEventListener('mousemove', function(event) {
-    mouseloc = getmousecord(event);
+    //get coordenent and screen positions
+    var mouseloc = getmousecord(event);
+    var exmouse = [event.x, event.y]
+    var tton = false;
     if (drag){
         
     }
     for (let t = 0; t < tanks.length; t++) {
         const tank = tanks[t];
-        if (tank.cheacksqr(mouseloc[0],mouseloc[1])){
-            //todo make tooltip code here
-        }
-        
+        if (tank.mcheck(event)){
+            tton = true;
+            tooltip.style.visibility = 'visible';
+            
+            //set tooltip location
+            var px = String(exmouse[0]) + "px"
+            tooltip.style.left = px;
+            var py = String(exmouse[1]) + "px"
+            tooltip.style.top = py;
+            //set tooltip stuff
+
+            var ttstuff = tank.toolinfo()
+            usertip.innerHTML = ttstuff["player"]
+            hptip.innerHTML = ttstuff["hp"]
+            pointtip.innerHTML = ttstuff["points"]
+        }   
+    }
+    if (!tton){
+        tooltip.style.visibility = 'hidden';
     }
 });
 
@@ -156,8 +192,6 @@ function getCursorPosition(event){
     return {"x": x,"y": y}
 }
 
-
-
 function getop() {
     var value = e.options[e.selectedIndex].value;
     action = value
@@ -167,5 +201,6 @@ var action = "R"
 var drag = false;
 
 //creates a list to store tanks *todo create way to load from sql
-var tanks = [new tank("joi")];
+var tanks = [new tank("joi"), new tank("tylar")];
+tanks[1].x = 4
 draw();
