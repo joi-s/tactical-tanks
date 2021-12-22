@@ -1,14 +1,18 @@
+//todo load this from php session using signin
+var session = "joi";
 //seting up canvas and getting things by id
 var can = document.getElementById('can');
 var ctx = can.getContext('2d');
-var e = document.getElementById("movsel");
+
 
 //tooltip variables
 var tooltip = document.getElementById("tool");
 var usertip = document.getElementById("header")
 var hptip = document.getElementById("tool1")
 var pointtip = document.getElementById("tool2")
-
+var rangetip = document.getElementById("tool3")
+var button1 = document.getElementById("cbut1")
+var button2 = document.getElementById("cbut2")
 //manualy setting canvas size
 can.width = 2000
 can.height = 1000
@@ -17,7 +21,7 @@ can.height = 1000
 class tank{
     constructor(player, x, y){//init function
         this.hp = 3;
-        this.points = 0;
+        this.points = 2;
         this.range = 1;
         this.user = player; 
         this.x = x
@@ -41,8 +45,14 @@ class tank{
     get hp(){
         return this._hp;
     }
+    get range(){
+        return this._range;
+    }
     
     //setters bc javascript is shit
+    set range(n){
+        this._range = n;
+    }
     set x(n){
         this._x = n;
     }
@@ -55,7 +65,27 @@ class tank{
     set hp(n){
        this._hp = n;
     }
-
+    //cheack if you can afford, does take points away
+    canaffordM(r){
+        if (this.points - r >= 0){
+            this.points -= r;
+            return true
+        }
+    }
+    //cheack if you can afford, doesnt take any away
+    canaffordN(r){
+        if (this.points - r >= 0){
+            return true
+        }
+        return false
+    }
+    uprange(r){
+        if (this.points - r >= 0){
+            this.range += r;
+            this.points -= r;
+            console.log("added " + r + "range")
+        }
+    }
     drawt(){//draws tank to the screen
         ctx.fillStyle = this.color;
         ctx.beginPath();
@@ -77,11 +107,30 @@ class tank{
         }
         return false
     }
-
+    //returns data used in tooltip/other in a convenent dicionary
     toolinfo(){
-        return {'hp':this._hp, 'player': this.user, 'points':this._points}
+        return {'hp':this._hp, 'player': this.user, 'points':this._points, "range": this._range, "x": this._x, "y": this._y}
     }
-
+    inmovrange(cords){
+        this.xd = this.x-1;
+        this.yd = this.y-1;
+        if(cords[0] <= this.xd + 1 && cords[0] >= this.xd - 1){
+            if(cords[1] <= this.yd + this.range && cords[1] >= this.yd - this.range){
+                return true;
+            }
+        }
+        return false
+    }
+    inrange(cords){
+        this.xd = this.x-1;
+        this.yd = this.y-1;
+        if(cords[0] <= this.xd + this.range && cords[0] >= this.xd - this.range){
+            if(cords[1] <= this.yd + this.range && cords[1] >= this.yd - this.range){
+                return true;
+            }
+        }
+        return false
+    }
 }
 function grid(){//draws the grid to the canvas
     //setup line settings
@@ -129,6 +178,15 @@ function draw() {
     }   
 }
 
+//set tooltip stuff
+function updatetooltip(tank){
+    var ttstuff = tank.toolinfo()
+    usertip.innerHTML = ttstuff["player"]
+    hptip.innerHTML = ttstuff["hp"]
+    pointtip.innerHTML = ttstuff["points"]
+    rangetip.innerHTML = ttstuff["range"]
+}
+
 //gets mouse cords and returns them in a list [x,y]
 function getmousecord(ev){
     //gets exactpoition
@@ -141,6 +199,29 @@ function getmousecord(ev){
 }
 //event listeners for draging perposes
 can.addEventListener('mousedown', function(ev) {
+    if (mov){
+        var coli = false;
+        
+
+        for (let t = 0; t < tanks.length; t++) {
+            const tank = tanks[t];
+            if (tank.mcheck(ev)){
+                coli = true;
+            }
+        }
+        var mouseloc = getmousecord(ev)
+        if (tvar.inmovrange(mouseloc)){
+            if (!coli){
+                if (tvar.canaffordM(1)){
+                    tvar.x = mouseloc[0] + 1 
+                    tvar.y = mouseloc[1] + 1 
+                    mov = false;
+                    draw()
+                }
+            }
+        }
+        mov = false;
+    }
     drag = true;
     //get mouse position
     posses = getCursorPosition(ev)
@@ -155,30 +236,44 @@ can.addEventListener('mousemove', function(event) {
     var mouseloc = getmousecord(event);
     var exmouse = [event.x, event.y]
     var tton = false;
-    if (drag){
-        
-    }
     for (let t = 0; t < tanks.length; t++) {
         const tank = tanks[t];
         if (tank.mcheck(event)){
-            tton = true;
-            tooltip.style.visibility = 'visible';
-            
-            //set tooltip location
-            var px = String(exmouse[0]) + "px"
-            tooltip.style.left = px;
-            var py = String(exmouse[1]) + "px"
-            tooltip.style.top = py;
-            //set tooltip stuff
+            if (!mov){
+                tton = true;
+                tooltip.style.visibility = 'visible';
+                
+                //set tooltip location
+                var px = String(exmouse[0]) + "px"
+                tooltip.style.left = px;
+                var py = String(exmouse[1]) + "px"
+                tooltip.style.top = py;
 
-            var ttstuff = tank.toolinfo()
-            usertip.innerHTML = ttstuff["player"]
-            hptip.innerHTML = ttstuff["hp"]
-            pointtip.innerHTML = ttstuff["points"]
+                var ttstuff = tank.toolinfo()
+                //update the tooltip
+                updatetooltip(tank)
+                
+
+                //hover over self button setup
+                if (ttstuff["player"] == session){
+                    tvar = tank;
+                    //show buttons
+                    button1.style.visibility = 'visible';
+                    button2.style.visibility = 'visible';
+                    //set button text
+                    button1.innerHTML = "upgrade";
+                    button2.innerHTML = "move";
+                    //set onclick function
+                    button1.setAttribute("onclick", "buttonhandle('U')");
+                    button2.setAttribute("onclick","buttonhandle('M')");
+                }
+            }
         }   
     }
     if (!tton){
         tooltip.style.visibility = 'hidden';
+        button1.style.visibility = 'hidden';
+        button2.style.visibility = 'hidden';
     }
 });
 
@@ -192,14 +287,24 @@ function getCursorPosition(event){
     return {"x": x,"y": y}
 }
 
-function getop() {
-    var value = e.options[e.selectedIndex].value;
-    action = value
-}
-//drag related vars
-var action = "R"
-var drag = false;
 
-//creates a list to store tanks *todo create way to load from sql
+function buttonhandle(act){
+
+    if (act == "U"){
+        tvar.uprange(1)
+    } else if (act == "M"){
+        if (tvar.canaffordN(1)){
+            mov = true;
+        }
+    }
+    updatetooltip(tvar);
+}
+
+//drag related vars
+
+var drag = false;
+var mov = false;
+var tvar;
+//creates a list to store tanks *todo create way to load from sql server 
 var tanks = [new tank("joi", 1, 2), new tank("tylar", 3,4)];
 draw();
