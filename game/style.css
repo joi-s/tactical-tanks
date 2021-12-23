@@ -1,0 +1,12 @@
+.tooltip{
+    background-color: gray;
+    text-align: center;
+    position: absolute;
+}
+.center{
+    text-align: center;
+    margin-top: 5px;
+}
+.hidden{
+    visibility: hidden;
+}
